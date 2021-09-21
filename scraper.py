@@ -11,65 +11,99 @@
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
 
 options = Options()
 options.headless = True
 options.add_argument("--window-size=1920,1200")
 
+
 driver = webdriver.Chrome(executable_path='/Users/emilzacharczuk/Downloads/chromedriver')
-driver.get("https://www.airbnb.co.uk/rooms/33090114")
-driver.implicitly_wait(20)
-name = driver.find_element_by_class_name('_fecoyn4')
-type = driver.find_element_by_class_name('_1qsawv5')
-bedroom = driver.find_element_by_xpath("(//span[contains(text(),'bedrooms') or contains(text(),'bedroom')])")
-bathroom = driver.find_element_by_xpath("(//span[contains(text(),'bathrooms') or contains(text(),'bathroom')])")
 
-# build main level object
-property_details = {
-	'name': name.text,
-	'type': type.text,
-	'bedroom': bedroom.text,
-    'bathroom': bathroom.text
-    }
+def check_exists_by_xpath(xpath):
+    try:
+        driver.find_element_by_xpath(xpath)
+    except NoSuchElementException:
+        return False
+    return True
 
-submitButton = driver.find_element_by_xpath("(//button[contains(text(),'OK')])").click()
-submit = driver.find_element_by_link_text("Show all 15 amenities").click()
-kitchen = driver.find_element_by_xpath("(//div[contains(text(),'Kitchen')])")
-# wifi = driver.find_element_by_xpath("(//div[contains(text(),'Wifi')])")
-wifi = driver.find_element_by_id("pdp_v3_internet_office_4_33090114-0-row-title")
-tv = driver.find_element_by_xpath("(//div[contains(text(),'TV')])")
-patio = driver.find_element_by_xpath("(//div[contains(text(),'Patio or balcony')])")
-hairdryer = driver.find_element_by_xpath("(//div[contains(text(),'Hair dryer')])")
-bedlinen = driver.find_element_by_xpath("(//div[contains(text(),'Bed linen')])")
-heating = driver.find_element_by_xpath("(//div[contains(text(),'Heating')])")
-smoke_alarm = driver.find_element_by_xpath("(//div[contains(text(),'Smoke alarm')])")
-carbon_monox_alarm = driver.find_element_by_xpath("(//div[contains(text(),'Carbon monoxide alarm')])")
+def check_exists_by_class_name(className):
+    try:
+        driver.find_element_by_class_name(className)
+    except NoSuchElementException:
+        return False
+    return True
+
+properties_array = []
+
+property_ids_array = ["33090114", "50633275"]
+def propert_portfolio_builder(property_ids_array):
+    properties_array_portfolio = []
+    domainURL = 'https://www.airbnb.co.uk/rooms/'
+    for property_id in property_ids_array:
+        print (domainURL + property_id)
+        driver.get(domainURL + property_id)
+        driver.implicitly_wait(10)
+        if check_exists_by_class_name('_fecoyn4'):
+            name = driver.find_element_by_class_name('_fecoyn4')
+            type = driver.find_element_by_class_name('_1qsawv5')
+            bedroom = driver.find_element_by_xpath("(//span[contains(text(),'bedrooms') or contains(text(),'bedroom')])")
+            bathroom = driver.find_element_by_xpath("(//span[contains(text(),'bathrooms') or contains(text(),'bathroom')])")
+
+            # build main level object
+            property_details = {
+            	'name': name.text,
+            	'type': type.text,
+            	'bedroom': bedroom.text,
+                'bathroom': bathroom.text
+                }
+
+            print(name.text)
+            print(type.text)
+            print(bedroom.text)
+            print(bathroom.text)
+            # submitButton = driver.find_element_by_xpath("(//button[contains(text(),'OK')])")
+            if check_exists_by_xpath("(//button[contains(text(),'OK')])"):
+                submitButton = driver.find_element_by_xpath("(//button[contains(text(),'OK')])").click()
+            submit = driver.find_element_by_partial_link_text("amenities").click()
+            property_details["amenities"] ={}
+            kitchen = driver.find_element_by_xpath("(//*[contains(text(),'Kitchen') or contains(text(),'Kitchen and dining')])")
+            property_details["amenities"]["kitchen"] = True
+            # wifi = driver.find_element_by_xpath("(//div[contains(text(),'Wifi')])")
+            wifi = driver.find_element_by_id("pdp_v3_internet_office_4_"+ property_id +"-0-row-title")
+            property_details["amenities"]["wifi"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'TV')])"):
+                tv = driver.find_element_by_xpath("(//div[contains(text(),'TV')])")
+                property_details["amenities"]["tv"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Patio or balcony')])"):
+                patio = driver.find_element_by_xpath("(//div[contains(text(),'Patio or balcony')])")
+                property_details["amenities"]["patioOrBalcony"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Hair dryer')])"):
+                hairdryer = driver.find_element_by_xpath("(//div[contains(text(),'Hair dryer')])")
+                property_details["amenities"]["hairDryer"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Bed linen')])"):
+                bedlinen = driver.find_element_by_xpath("(//div[contains(text(),'Bed linen')])")
+                property_details["amenities"]["bedLinen"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Heating')])"):
+                heating = driver.find_element_by_xpath("(//div[contains(text(),'Heating')])")
+                property_details["amenities"]["heating"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Smoke alarm')])"):
+                smoke_alarm = driver.find_element_by_xpath("(//div[contains(text(),'Smoke alarm')])")
+                property_details["amenities"]["smokeAlarm"] = True
+            if check_exists_by_xpath("(//div[contains(text(),'Carbon monoxide alarm')])"):
+                carbon_monox_alarm = driver.find_element_by_xpath("(//div[contains(text(),'Carbon monoxide alarm')])")
+                property_details["amenities"]["carbonMonoxideAlarm"] = True
 
 
-# //*[@id="site-content"]/div/div[1]/div[2]/div[7]/div/div/div/div[2]/section/div[3]/div[1]/div/div[1]
-# //*[@id="site-content"]/div/div[1]/div[2]
-print(kitchen.text)
-print(wifi.text)
-print(tv.text)
-print(patio.text)
-print(hairdryer.text)
-print(bedlinen.text)
-# This is just a sample, I would also use booleans instead of text
-property_details['amenieties'] = {
-    'kitchen': kitchen.text,
-    'wifi': wifi.text,
-	'tv': tv.text,
-	'patio': patio.text,
-	'hairdryer': hairdryer.text,
-    'bedlinen': bedlinen.text,
-    'safety': [smoke_alarm.text, carbon_monox_alarm.text]
-}
+            properties_array.append(property_details)
+            print(properties_array)
+        else:
+            print ("Property doesn't exists")
 
-print(property_details)
+    driver.quit()
+    return  properties_array
 
-driver.quit()
-
-
+propert_portfolio_builder(property_ids_array)
 # //*[@id="site-content"]/div/div[1]/div[2]/div[2]/div/div/div/div/section/div[1]/span/h1
 # /html/body/div[5]/div/div/div[1]/div/main/div/div/div/div/div[1]/main/div/div[1]/div[2]/div[2]/div/div/div/div/section/div[1]/span/h1
 # /html/body/div[5]/div/div/div[1]/div/main/div/div/div/div/div[1]/main/div/div[1]/div[2]/div[2]/div/div/div/div/section/div[1]/span/h1
