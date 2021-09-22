@@ -36,7 +36,7 @@ def check_exists_by_class_name(className):
 
 properties_array = []
 
-property_ids_array = ["33090114", "50633275"]
+property_ids_array = ["33571268","33090114","50633275"]
 def propert_portfolio_builder(property_ids_array):
     properties_array_portfolio = []
     domainURL = 'https://www.airbnb.co.uk/rooms/'
